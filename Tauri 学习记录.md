@@ -12,19 +12,7 @@ https://nodejs.org/zh-cn安装LTS 版本
 
 ## 3.安装 Tauri
 
-使用 cargo tauri init
-
-project/
-│
-├── frontdisk/          # 前端源代码
-│   ├── src/           # 前端源代码
-│   ├── public/        # 公共文件（如 index.html）
-│   └── package.json   # 前端项目配置文件
-│
-└── src-tauri/         # Tauri 后端
-    ├── src/           # Rust 后端代码
-    ├── tauri.conf.json# Tauri 配置文件
-    └── Cargo.toml     # Rust 项目配置文件
+参考Tauri 官方文档
 
 import { invoke } from "@tauri-apps/api/tauri";
 const result = await invoke("greet", { name: "Vue + Tauri" });
@@ -159,8 +147,6 @@ windows下面需要频繁起服务
 ```
 
 ## 后端rust业务逻辑
-
-
 
 **ip 逻辑需要更改，不是设备序号 而是数据**
 
