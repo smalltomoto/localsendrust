@@ -55,6 +55,7 @@ const devices = ref<Device[]>([]);
 const loading = ref(false);
 const touch = ref(false);
 async function handleScanDevices() {
+  devices.value = [];
   loading.value = true;
   try {
     const result = await scanDevices();
@@ -65,6 +66,7 @@ async function handleScanDevices() {
   }
   finally {
     loading.value = false;
+    touch.value = false;
   }
 
 }
