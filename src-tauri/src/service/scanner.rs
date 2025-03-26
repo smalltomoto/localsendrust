@@ -1,26 +1,30 @@
 use crate::models::device::Device;
 use local_ip_address::local_ip;
 use std::net::{IpAddr, Ipv4Addr};
-use std::vec;
-use tokio::time::{sleep,Duration};
-use tokio::process::Command;
+use std::process::Stdio;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::vec;
+use tokio::process::Command;
+use tokio::time::{sleep, Duration};
 
 async fn ping(ip: &str) -> bool {
     let output = Command::new("ping")
         .args(["-n", "1", "-w", "4", ip])
+        .creation_flags(0x08000000)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
         .output()
         .await;
 
     match output {
         Ok(out) => out.status.success(),
-        Err(_) => false,
+        Err(_e) => false,
     }
 }
 
 async fn scan_local_network() -> Vec<Device> {
-    let local_ip = match local_ip().ok(){
+    let local_ip = match local_ip().ok() {
         Some(IpAddr::V4(ip)) => ip,
         _ => panic!("无法获取本机ID"),
     };
@@ -36,7 +40,7 @@ async fn scan_local_network() -> Vec<Device> {
     let mut handles: Vec<tokio::task::JoinHandle<Option<Device>>> = vec![];
     let sorting = Arc::new(AtomicUsize::new(1));
 
-    for i in 1..254{
+    for i in 1..254 {
         let sorting = sorting.clone();
         let target_ip = Ipv4Addr::new(
             subnet.octets()[0],
@@ -47,33 +51,30 @@ async fn scan_local_network() -> Vec<Device> {
 
         let ip_str = target_ip.to_string();
 
-        handles.push(tokio::spawn(async move{
-            if ping(&ip_str).await{
-                let id = sorting.fetch_add(1,Ordering::SeqCst);
-                Some(Device{
+        handles.push(tokio::spawn(async move {
+            if ping(&ip_str).await {
+                let id = sorting.fetch_add(1, Ordering::SeqCst);
+                Some(Device {
                     id,
-                    name:format!("设备 {}",id),
+                    name: format!("设备 {}", id),
                     ip: ip_str,
                     online: true,
                 })
-            }
-            else
-            {
+            } else {
                 None
-            } 
+            }
         }));
-    
-        sleep(Duration::from_millis(5)).await;    
+
+        sleep(Duration::from_millis(5)).await;
     }
-    for handle in handles{
-        if let Ok(Some(device))=handle.await{
+    for handle in handles {
+        if let Ok(Some(device)) = handle.await {
             devices.push(device);
         }
     }
     devices
 }
 
-pub async fn scan_device ()->Vec<Device>
-{
+pub async fn scan_device() -> Vec<Device> {
     scan_local_network().await
 }
