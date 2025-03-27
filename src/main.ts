@@ -3,9 +3,17 @@ import App from "./App.vue";
 import './style/tailwind.css'
 import {emit} from "@tauri-apps/api/event"
 import { getTauriVersion } from "@tauri-apps/api/app";
-const app = createApp(App);
+import { createPinia } from 'pinia'
+import router from "./router/router"
+import {detectAndSetAffinity} from "./api/scan"
+const pinia = createPinia()
+const app = createApp(App)
+app.use(pinia)
+app.use(router)
 app.mount("#app");
+
 nextTick(async () => {
+  detectAndSetAffinity();
   const tauriVersion = await getTauriVersion();
     if (tauriVersion) {
     emit("vue-loaded");

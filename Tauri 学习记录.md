@@ -144,6 +144,7 @@ onUnmounted：与 unmounted 类似，组件销毁后调用。
 
 前端样式不能过度相信ai
 windows下面需要频繁起服务
+v-if 切换页面后内容不会被保留下来，相反v-show 不会进行重新渲染
 ```
 
 ## 后端rust业务逻辑
@@ -165,6 +166,17 @@ letid= SORTING.fetch_add(1, Ordering::SeqCst);
     ])
 
 后端的rust函数注册方式
+
+use affinity;
+
+fn main() {
+    // 绑定到 P-Core（假设 CPU 0-5 是 P-Core）
+    let core_ids = vec![0, 1, 2, 3, 4, 5];
+    affinity::set_thread_affinity(&core_ids).unwrap();
+
+    println!("Running on P-Cores!");
+    loop {} // 模拟长时间运行
+}
 
 **学习自己写一个rust链表** **rust入门检测**
 

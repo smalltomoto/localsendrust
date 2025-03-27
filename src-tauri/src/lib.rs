@@ -3,19 +3,13 @@ use tauri::{Listener, Manager};
 mod commands;
 mod models;
 mod service;
-// pub fn run() {
-//     tauri::Builder::default()
-//         .plugin(tauri_plugin_opener::init())
-//         .invoke_handler(tauri::generate_handler![
-//             commands::network::scan_devices
-//         ])
-//         .run(tauri::generate_context!())
-//         .expect("error while running tauri application");
-// }
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![commands::network::scan_devices])
+        .invoke_handler(tauri::generate_handler![
+            commands::network::scan_devices,
+            commands::checkcores::detect_and_set_affinity,
+        ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
             window.hide().unwrap();

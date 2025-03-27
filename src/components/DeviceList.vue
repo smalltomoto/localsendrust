@@ -4,17 +4,18 @@
       <!-- 卡片头部 -->
       <div class="px-6 py-4 border-b border-gray-200  flex justify-center">
         <img :src="loadingIcon" alt="Loading" class="w-16 h-16 opacity-75" />
-        <!-- <h2 class="text-lg font-semibold text-gray-800 flex justify-center">可用设备</h2> -->
       </div>
       <!-- 设备列表区域：内部滚动 -->
       <div class="list-device" v-if="devices.length > 0">
-
-        <div v-for="device in devices" :key="device.id" class="item-device" @click="selectDevice(device)">
+        <div v-for="device in devices" :key="device.id" class="item-device" :class="{
+          'bg-blue-500 text-white': selectedDevice === device.id,
+          'hover:bg-gray-200': selectedDevice !== device.id
+        }" @click="selectDevice(device)">
           <div class="device-name">{{ device.name }} ({{ device.ip }})</div>
           <div class="text-green-500">在线</div>
         </div>
       </div>
-      <div v-if="touch&&devices.length==0">
+      <div v-if="touch && devices.length == 0">
         <div class="flex items-center justify-center text-red font-medium py-2 rounded-lg shadow-md">
           当前没有设备在线
         </div>
@@ -51,9 +52,16 @@
 import { ref } from "vue";
 import { scanDevices } from "../api/scan";
 import loadingIcon from "../assets/crab.svg";
+import { useDeviceStore } from "../store/devicestore";
+import { useRouter } from "vue-router";
+import { onActivated } from 'vue';
 const devices = ref<Device[]>([]);
 const loading = ref(false);
 const touch = ref(false);
+const selectedDevice = ref<number | null>(null);
+const deviceStore = useDeviceStore();
+const router = useRouter();
+
 async function handleScanDevices() {
   devices.value = [];
   loading.value = true;
@@ -68,27 +76,30 @@ async function handleScanDevices() {
     loading.value = false;
     touch.value = false;
   }
-
 }
 
-const selectDevice = (device: { id: number; name: string; ip: string }) => {
-  console.log("选择设备:", device);
+const selectDevice = (device: Device) => {
+  selectedDevice.value = (device.id) === selectedDevice.value ? null : (device.id);
+  deviceStore.setSelectedDevice(device);
+  router.push('/sendFile');
 };
+
+onActivated(() => {
+  console.log('deviceList 页面被恢复');
+});
 
 </script>
 <style>
 .list-device {
   height: 300px;
-  /* 确保它不会超出容器 */
   overflow-y: auto;
-  /* 使用 auto 而不是 scroll，避免始终显示滚动条 */
   width: 100%;
 }
 
 .item-device {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  /* 添加间距使每个设备之间有一定的距离 */
+  padding: 10px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
 }
 </style>
